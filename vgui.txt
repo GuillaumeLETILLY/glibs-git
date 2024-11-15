@@ -1,0 +1,123 @@
+Golem Vgui - Documentation
+========================================
+
+Table of Contents:
+-----------------
+1. Responsive System
+2. Drawing Functions
+3. Material Functions
+4. Panel Functions
+5. Animation Functions
+
+1. Responsive System
+-------------------
+--@ Core Functions:
+gRespX(value)               -- Scales X value based on screen width
+gRespY(value)               -- Scales Y value based on screen height
+gRespFont(size)             -- Scales font size based on screen resolution
+
+--@ Font Creation:
+gCreateRespFont(name, fontFamily, baseSize, weight, antialias, shadow, outline)
+  - Creates a responsive font that scales with screen size
+  - All parameters except name and baseSize are optional
+
+2. Drawing Functions
+-------------------
+--@ Text Drawing:
+gSimpleText(text, font, x, y, colour, xalign, yalign)
+  - Draws text with responsive positioning
+  - Returns width and height of drawn text
+
+gSimpleTextOutlined(text, font, x, y, colour, xalign, yalign, outlinewidth, outlinecolour)
+  - Draws outlined text with responsive positioning
+  - Returns width and height of drawn text
+
+--@ Box Drawing:
+gRoundedBox(bordersize, x, y, w, h, color)
+  - Draws a rounded box with all corners rounded
+
+gRoundedBoxEx(bordersize, x, y, w, h, color, tl, tr, bl, br)
+  - Draws a rounded box with customizable corners
+  - tl, tr, bl, br are boolean values for each corner
+
+3. Material Functions
+--------------------
+gMaterials(name, posx, posy, sizex, sizey, color)
+  - Draws a material with responsive scaling
+  - Color is optional (defaults to white)
+
+gMaterialsUV(name, posx, posy, sizex, sizey, color, u0, v0, u1, v1)
+  - Draws a material with UV mapping and responsive scaling
+  - UV coordinates are optional (default to full texture)
+
+4. Panel Functions
+-----------------
+--@ Position:
+panel:gSetX(x)              -- Sets X position
+panel:gSetY(y)              -- Sets Y position
+panel:gSetPos(x, y)         -- Sets both X and Y position
+
+--@ Size:
+panel:gSetWidth(w)          -- Sets width
+panel:gSetHeight(h)         -- Sets height
+panel:gSetSize(w, h)        -- Sets both width and height
+panel:gSetSquareSize(size)  -- Sets width and height to same value
+
+--@ Constraints:
+panel:gSetMinWidth(w)       -- Sets minimum width
+panel:gSetMinHeight(h)      -- Sets minimum height
+panel:gSetMaxWidth(w)       -- Sets maximum width
+panel:gSetMaxHeight(h)      -- Sets maximum height
+
+--@ Centering:
+panel:gCenterHorizontal(offset)  -- Centers horizontally with optional offset
+panel:gCenterVertical(offset)    -- Centers vertically with optional offset
+panel:gCenter(xOffset, yOffset)  -- Centers both horizontally and vertically
+
+--@ Margins and Padding:
+panel:gDockMargin(left, top, right, bottom)    -- Sets dock margins
+panel:gDockPadding(left, top, right, bottom)   -- Sets dock padding
+panel:gSetMargin(margin)                       -- Sets uniform margin
+panel:gSetPadding(padding)                     -- Sets uniform padding
+
+5. Animation Functions
+---------------------
+--@ Movement:
+panel:gMoveTo(x, y, duration, delay, ease, callback)
+panel:gMoveToX(x, duration, delay, ease, callback)
+panel:gMoveToY(y, duration, delay, ease, callback)
+panel:gCenterTo(duration, delay, ease, callback)
+
+--@ Sizing:
+panel:gSizeTo(w, h, duration, delay, ease, callback)
+panel:gSizeToW(w, duration, delay, ease, callback)
+panel:gSizeToH(h, duration, delay, ease, callback)
+panel:gSizeToSquare(size, duration, delay, ease, callback)
+
+--@ Combined Animations:
+panel:gAnimateTo(x, y, w, h, duration, delay, ease, callback)
+  - Animates position and size simultaneously
+
+--@ Fading:
+panel:gFadeIn(duration, delay, callback)
+panel:gFadeOut(duration, delay, callback)
+
+--@ Complex Animations:
+panel:gAnimateSequence(animations)
+  - Executes a sequence of animations
+  - Example structure:
+    {
+        {type = "move", x = 100, y = 100, duration = 0.5},
+        {type = "size", w = 200, h = 200, duration = 0.3},
+        {type = "fade", alpha = 0, duration = 0.2}
+    }
+
+Common Parameters:
+----------------
+duration  -- Animation duration in seconds (default: 0.3)
+delay     -- Delay before animation starts (default: 0)
+ease      -- Easing function (optional)
+callback  -- Function to call when animation completes (optional)
+
+Note: All position and size values are automatically scaled according
+to screen resolution using the responsive system.

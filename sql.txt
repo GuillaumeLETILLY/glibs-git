@@ -1,0 +1,203 @@
+Golem Query System - Advanced Usage Guide
+========================================
+
+Table of Contents:
+-----------------
+1. Basic Operations
+2. Advanced Selections
+3. Complex Conditions
+4. Custom Queries
+5. Common Use Cases
+
+1. Basic Operations
+------------------
+--@ Create a table
+gQueryCreateTable("players", {
+   steam_id = "TEXT PRIMARY KEY",
+   name = "TEXT",
+   points = "INTEGER",
+   rank = "TEXT",
+   last_seen = "DATETIME",
+   playtime = "INTEGER",
+   kills = "INTEGER",
+   deaths = "INTEGER"
+})
+
+--@ Simple insert
+gQueryInsert("players", {
+   steam_id = "STEAM_0:1:12345",
+   name = "Player1",
+   points = 100,
+   last_seen = os.date("%Y-%m-%d %H:%M:%S")
+})
+
+2. Advanced Selections
+---------------------
+--@ Select by Steam ID
+local player = gQuerySelectByKey("players", "steam_id", "STEAM_0:1:12345")
+
+--@ Select specific columns
+local playerStats = gQuerySelect("players", 
+   {"name", "kills", "deaths", "points"}, 
+   {steam_id = "STEAM_0:1:12345"}
+)
+
+--@ Select with multiple conditions
+local elitePlayers = gQuerySelect("players", 
+   {"name", "points", "rank"}, 
+   {
+   	points = {operator = ">=", value = 1000},
+   	rank = "Elite"
+   }
+)
+
+3. Complex Conditions
+--------------------
+--@ Players with high K/D ratio and minimum playtime
+local topPlayers = gQuerySelectCustom(
+   "players",
+   {"name", "kills", "deaths"},
+   "kills/CAST(deaths AS FLOAT) >= 2.0 AND playtime >= 3600",
+   "kills DESC",
+   "10"
+)
+
+--@ Recent active players
+local activePlayers = gQuerySelect("players", 
+   {"name", "playtime"}, 
+   {
+   	last_seen = {operator = ">=", value = os.date("%Y-%m-%d", os.time() - 86400)},
+   	playtime = {operator = ">", value = 1800}
+   }
+)
+
+4. Custom Queries
+----------------
+--@ Top performers of the week
+local weeklyBest = gQuerySelectCustom(
+   "players",
+   {"name", "points", "kills"},
+   "last_seen >= date('now', '-7 days')",
+   "points DESC",
+   "5"
+)
+
+--@ Players matching name pattern
+local bobPlayers = gQuerySelect("players", 
+   {"name", "rank"}, 
+   {name = {operator = "LIKE", value = "%Bob%"}}
+)
+
+5. Common Use Cases
+------------------
+--@ Update player stats
+gQueryUpdate("players",
+   {
+   	points = points + 10,
+   	kills = kills + 1
+   },
+   {steam_id = "STEAM_0:1:12345"}
+)
+
+--@ Reset daily statistics
+gQueryUpdate("players",
+   {
+   	daily_kills = 0,
+   	daily_points = 0
+   },
+   {
+   	last_seen = {operator = "<", value = os.date("%Y-%m-%d")}
+   }
+)
+
+--@ Delete inactive players
+gQueryDelete("players", {
+   last_seen = {
+   	operator = "<", 
+   	value = os.date("%Y-%m-%d", os.time() - (30 * 86400))
+   }
+})
+
+Additional Tips:
+---------------
+1. Always use sql.SQLStr() for user inputs to prevent SQL injection
+2. Use proper indexing for frequently queried columns
+3. Consider using transactions for multiple related operations
+4. Regularly backup your database
+5. Handle nil returns from queries appropriately
+
+Error Handling Example:
+----------------------
+local function SafeQuerySelect(tableName, columns, conditions)
+   local success, result = pcall(gQuerySelect, tableName, columns, conditions)
+   if not success then
+   	print("Query Error: " .. tostring(result))
+   	return nil
+   end
+   return result
+end
+
+Optimization Tips:
+-----------------
+1. Use specific column selections instead of SELECT *
+2. Create indexes for frequently searched columns
+3. Use LIMIT when you don't need all results
+4. Clean up old/unnecessary data regularly
+5. Use appropriate data types for columns
+
+Common Patterns:
+---------------
+--@ Player Data Management
+local function UpdatePlayerStats(steamID, kills, deaths, points)
+   return gQueryUpdate("players",
+   	{
+   		kills = kills,
+   		deaths = deaths,
+   		points = points,
+   		last_seen = os.date("%Y-%m-%d %H:%M:%S")
+   	},
+   	{steam_id = steamID}
+   )
+end
+
+--@ Leaderboard System
+local function GetTopPlayers(limit, timeframe)
+   return gQuerySelectCustom(
+   	"players",
+   	{"name", "points", "kills", "deaths"},
+   	timeframe and "last_seen >= date('now', '-" .. timeframe .. " days')" or nil,
+   	"points DESC",
+   	tostring(limit or 10)
+   )
+end
+
+--@ Player Progress Tracking
+local function GetPlayerProgress(steamID, days)
+   return gQuerySelectCustom(
+   	"player_history",
+   	{"date", "points", "kills"},
+   	"steam_id = " .. sql.SQLStr(steamID) .. " AND date >= date('now', '-" .. days .. " days')",
+   	"date ASC"
+   )
+end
+
+Examples of Complex Queries:
+--------------------------
+--@ Players with high efficiency
+local efficientPlayers = gQuerySelectCustom(
+   "players",
+   {"name", "kills", "deaths", "points"},
+   "kills > 100 AND deaths > 0 AND (CAST(kills AS FLOAT) / deaths) > 2.0",
+   "(CAST(kills AS FLOAT) / deaths) DESC",
+   "10"
+)
+
+--@ Active players with ranking
+local rankedPlayers = gQuerySelectCustom(
+   "players",
+   {"name", "points", "playtime"},
+   "playtime >= 3600 AND last_seen >= date('now', '-7 days')",
+   "points DESC"
+)
+
+For more information and support, contact Golem > pymousss
